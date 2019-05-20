@@ -44,9 +44,7 @@ class FluentTarget extends Target
      * FluentClientInterface application component or singleton, or a
      * configuration array.
      */
-    public $client = [
-        'class' => 'thamtech\fluentd\FireForgetHttpFluentClient',
-    ];
+    public $client = [];
 
     /**
      * @var bool indicates whether to format an exception message as an array
@@ -87,6 +85,13 @@ class FluentTarget extends Target
     public function init()
     {
         parent::init();
+
+        // set default class
+        if (is_array($this->client)) {
+            $this->client = ArrayHelper::merge([
+                'class' => 'thamtech\fluentd\FireForgetHttpFluentClient',
+            ]);
+        }
         $this->client = Instance::ensure($this->client, 'thamtech\fluentd\FluentClientInterface');
     }
 
