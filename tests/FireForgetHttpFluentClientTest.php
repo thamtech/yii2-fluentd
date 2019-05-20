@@ -108,7 +108,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
         $client = Yii::createObject([
             'class' => MockClient::class,
             'batchSize' => 2,
-            'batchesPerConnection' => 2,
+            'batchesPerPost' => 2,
         ]);
 
         $client->postResponse = [true, true]; // one 'true' for each batch
@@ -159,7 +159,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
         $client = Yii::createObject([
             'class' => MockClient::class,
             'batchSize' => 2,
-            'batchesPerConnection' => 2,
+            'batchesPerPost' => 2,
         ]);
 
         $client->postResponse = [true, false]; // 'true' for batch one, 'false' for batch 2
@@ -205,7 +205,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
         $client = Yii::createObject([
             'class' => MockClient::class,
             'batchSize' => 2,
-            'batchesPerConnection' => 2,
+            'batchesPerPost' => 2,
         ]);
 
         $client->postResponse = [false, false]; // one 'true' for each batch
