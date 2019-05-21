@@ -50,7 +50,7 @@ class FireForgetHttpFluentClient extends BaseFluentClient
      *
      * {@inheritdoc}
      */
-    protected function post($tag, array $records, $timestamp = null)
+    protected function post($tag, array $serializedRecords, $timestamp = null)
     {
         $fp = fsockopen($this->host, $this->port, $errno, $errstr, $this->connectionTimeout);
         if (!$fp) {
@@ -61,22 +61,29 @@ class FireForgetHttpFluentClient extends BaseFluentClient
         $result = true;
 
         $i = 0;
-        foreach ($records as $k=>$data) {
+        foreach ($serializedRecords as $k=>$data) {
             // stop attempting to emit records if we had one fail
             if (!$result) {
                 // populate the rest of the result indicators as false
                 $results[$k] = false;
                 continue;
             }
-            $output = "POST /" . $tag . ($timestamp ? '?time=' . $timestamp : '') . " HTTP/1.1\r\n";
+
+            $queryString = $timestamp
+                ? '?time=' . $timestamp
+                : '';
+
+            // Keep-Alive unless we are on the last record
+            $connection = ($i == (count($serializedRecords) - 1))
+                ? 'Close'
+                : 'Keep-Alive';
+
+            $output = "POST /" . $tag . $queryString . " HTTP/1.1\r\n";
             $output.= "Host: " . $this->host . "\r\n";
             $output.= "Content-Type: " . $this->contentType . "\r\n";
-
-            $serialized = $this->serialize($data);
-
-            $output.= "Content-Length: " . strlen($encoded) . "\r\n";
-            $output.= "Connection: " . ($i == (count($records) - 1) ? "Close" : "Keep-Alive") . "\r\n\r\n";
-            $output.= $serialized;
+            $output.= "Content-Length: " . strlen($data) . "\r\n";
+            $output.= "Connection: " . $connection . "\r\n\r\n";
+            $output.= $data;
 
             $bytes = $this->writeStream($fp, $output);
             if ($bytes == strlen($output)) {

@@ -45,7 +45,7 @@ abstract class BaseFluentClient implements FluentClientInterface
      */
     public function emit($tag, $record, $timestamp = null)
     {
-        $results = $this->post($tag, [$record], $timestamp);
+        $results = $this->post($tag, [$this->serialize($record)], $timestamp);
         return $results[0];
     }
 
@@ -67,8 +67,8 @@ abstract class BaseFluentClient implements FluentClientInterface
 
         while ($r < count($records)) {
             // capture the first batch and add it to the array of postBatches
-            $batch = array_slice($records, $r, $this->batchSize, true);
-            $batchKeys = array_keys($batch);
+            $batch = array_slice($records, $r, $this->batchSize);
+            $batchKeys = array_slice(array_keys($records), $r, $this->batchSize);
             $postBatches[] = $batch;
             $postBatchesKeys[] = $batchKeys;
             $r+= count($batch);
@@ -76,7 +76,11 @@ abstract class BaseFluentClient implements FluentClientInterface
             // if we've gathered enough batches for one post (or we've
             // reached the end of the list of records):
             if (count($postBatches) >= $this->batchesPerPost || (count($postBatches) > 0 && $r >= count($records)-1)) {
-                $postBatchResults = $this->post($tag, $postBatches, $timestamp);
+                $postBatchResults = $this->post(
+                    $tag,
+                    array_map([$this, 'serialize'], $postBatches),
+                    $timestamp
+                );
 
                 // capture the results and make a note of any failures
                 foreach ($postBatchResults as $i=>$result) {
@@ -92,8 +96,8 @@ abstract class BaseFluentClient implements FluentClientInterface
                 // stop attempting to emit records if we had one fail
                 if ($failureOccurred) {
                     // populate the rest of the results with false values and return
-                    $remainingRecords = array_slice($records, $r, null, true);
-                    $remainingKeys = array_keys($remainingRecords);
+                    $remainingRecords = array_slice($records, $r, null);
+                    $remainingKeys = array_slice(array_keys($records), $r, null);
                     $falses = array_fill(0, count($remainingKeys), false);
                     $results+= array_combine($remainingKeys, $falses);
                     return $results;
@@ -114,13 +118,13 @@ abstract class BaseFluentClient implements FluentClientInterface
      * be either a single record or a Fluentd batch array of records.
      *
      * @param  string $tag The fluentd tag
-     * @param  array $records array of one or more records or recordsets to post
+     * @param  string[] $records array of one or more records or recordsets to post
      * @param  float|int $timestamp The time in seconds
      *
      * @return bool[] an array indicating the success or failure of each item
      * in the $records array.
      */
-    abstract protected function post($tag, array $records, $timestamp = null);
+    abstract protected function post($tag, array $serializedRecords, $timestamp = null);
 
     /**
      * Serialize the data using the configured serializer. If no serializer

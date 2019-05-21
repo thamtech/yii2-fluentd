@@ -24,7 +24,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
 
         $expectedCall = [
             'tag' => 'mytag',
-            'records' => [['a' => 1, 'b' => 2]],
+            'records' => ['{"a":1,"b":2}'],
             'timestamp' => $this->time,
         ];
 
@@ -44,7 +44,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
 
         $expectedCall = [
             'tag' => 'mytag',
-            'records' => [['a' => 1, 'b' => 2]],
+            'records' => ['{"a":1,"b":2}'],
             'timestamp' => $this->time,
         ];
 
@@ -69,7 +69,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
 
         $expectedCall = [
             'tag' => 'mytag',
-            'records' => [$records],
+            'records' => ['[{"a":1,"b":2},{"a":2,"b":2}]'],
             'timestamp' => $this->time,
         ];
 
@@ -94,7 +94,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
 
         $expectedCall = [
             'tag' => 'mytag',
-            'records' => [$records],
+            'records' => ['[{"a":1,"b":2},{"a":2,"b":2}]'],
             'timestamp' => $this->time,
         ];
 
@@ -139,12 +139,12 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
         $expectedCalls = [
             [
                 'tag' => 'mytag',
-                'records' => [$connection1Batch1, $connection1Batch2],
+                'records' => ['[{"a":1,"b":2},{"a":2,"b":2}]','[{"a":3,"b":2},{"a":4,"b":2}]'],
                 'timestamp' => $this->time,
             ],
             [
                 'tag' => 'mytag',
-                'records' => [$connection2Batch1, $connection2Batch2],
+                'records' => ['[{"a":1,"b":4},{"a":2,"b":4}]','[{"a":3,"b":4},{"a":4,"b":4}]'],
                 'timestamp' => $this->time,
             ],
         ];
@@ -164,21 +164,30 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
 
         $client->postResponse = [true, false]; // 'true' for batch one, 'false' for batch 2
 
+        $r0 = ['a' => 1, 'b' => 2];
+        $r1 = ['a' => 2, 'b' => 2];
+        $r2 = ['a' => 3, 'b' => 2];
+        $r3 = ['a' => 4, 'b' => 2];
+        $r4 = ['a' => 1, 'b' => 4];
+        $r5 = ['a' => 2, 'b' => 4];
+        $r6 = ['a' => 3, 'b' => 4];
+        $r7 = ['a' => 4, 'b' => 4];
+
         $connection1Batch1 = [
-            0 => ['a' => 1, 'b' => 2],
-            1 => ['a' => 2, 'b' => 2],
+            0 => $r0,
+            1 => $r1,
         ];
         $connection1Batch2 = [
-            2 => ['a' => 3, 'b' => 2],
-            3 => ['a' => 4, 'b' => 2],
+            2 => $r2,
+            3 => $r3,
         ];
         $connection2Batch1 = [
-            4 => ['a' => 1, 'b' => 4],
-            5 => ['a' => 2, 'b' => 4],
+            4 => $r4,
+            5 => $r5,
         ];
         $connection2Batch2 = [
-            6 => ['a' => 3, 'b' => 4],
-            7 => ['a' => 4, 'b' => 4],
+            6 => $r6,
+            7 => $r7,
         ];
         $records = array_merge($connection1Batch1,
             $connection1Batch2,
@@ -190,7 +199,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
         $expectedCalls = [
             [
                 'tag' => 'mytag',
-                'records' => [$connection1Batch1, $connection1Batch2],
+                'records' => ['[{"a":1,"b":2},{"a":2,"b":2}]','[{"a":3,"b":2},{"a":4,"b":2}]'],
                 'timestamp' => $this->time,
             ],
         ];
@@ -236,7 +245,7 @@ class FireForgetHttpFluentClientTest extends \thamtechunit\fluentd\TestCase
         $expectedCalls = [
             [
                 'tag' => 'mytag',
-                'records' => [$connection1Batch1, $connection1Batch2],
+                'records' => ['[{"a":1,"b":2},{"a":2,"b":2}]','[{"a":3,"b":2},{"a":4,"b":2}]'],
                 'timestamp' => $this->time,
             ],
         ];
