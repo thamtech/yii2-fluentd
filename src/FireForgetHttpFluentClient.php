@@ -104,8 +104,10 @@ class FireForgetHttpFluentClient extends BaseFluentClient
         // if we don't read to the end of the responses, Fluentd may stop
         // processing the records part way through and leave some of them
         // unsaved.
+        $expectedBytesPerResponse = 88;
+        $length = 8192 * ceil($numRecordsPosted * $expectedBytesPerResponse * 1.0 / 8192);
         while (!feof($fp)) {
-            fread($fp, 1024);
+            fread($fp, $length);
         }
         fclose($fp);
 
