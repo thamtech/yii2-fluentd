@@ -35,6 +35,17 @@ class FireForgetHttpFluentClient extends BaseFluentClient
     public $connectionTimeout = 30;
 
     /**
+     * @var int maximum number of consecutive failed writes over the network
+     * before giving up.
+     */
+    public $writeRetries = 3;
+
+    /**
+     * @var int microseconds delay between each write retry
+     */
+    public $writeRetryDelay = 1000;
+
+    /**
      * Open a socket connection and send an HTTP POST for each record
      *
      * {@inheritdoc}
@@ -67,7 +78,7 @@ class FireForgetHttpFluentClient extends BaseFluentClient
             $output.= "Connection: " . ($i == (count($records) - 1) ? "Close" : "Keep-Alive") . "\r\n\r\n";
             $output.= $serialized;
 
-            $bytes = fwrite($fp, $output);
+            $bytes = $this->writeStream($fp, $output);
             if ($bytes == strlen($output)) {
                 $results[$k] = true;
             } else {
@@ -85,5 +96,44 @@ class FireForgetHttpFluentClient extends BaseFluentClient
         fclose($fp);
 
         return $results;
+    }
+
+    /**
+     * A wrapper around `fwrite` that will loop until all bytes have been
+     * written, or until the `fwrite` call fails a consecutive number of times
+     * specified by [[writeRetries]].
+     *
+     * @param  resource $fp file system pointer resource
+     *
+     * @param  string $string the string to write
+     *
+     * @return int the number of bytes written
+     */
+    protected function writeStream($fp, $string)
+    {
+        $retriesRemaining = $this->writeRetries;
+        $written = 0;
+        while ($written < strlen($string) && $retriesRemaining) {
+            $result = ($retriesRemaining > 1)
+                ? @fwrite($fp, substr($string, $written))
+                : fwrite($fp, substr($string, $written));
+
+            if (!$result) {
+                --$retriesRemaining;
+                if ($retriesRemaining) {
+                    usleep($this->writeRetryDelay);
+                    continue;
+                } else {
+                    error_log('fwrite in ' . __FILE__ . ' failed after writing ' . $written . ' bytes out of ' . strlen($string));
+                    return $written;
+                }
+            }
+            // reset retries as long as we're making progress
+            $retriesRemaining = $this->writeRetries;
+
+            $written+= $result;
+        }
+
+        return $written;
     }
 }
