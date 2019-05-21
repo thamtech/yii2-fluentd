@@ -60,7 +60,13 @@ class FireForgetHttpFluentClient extends BaseFluentClient
         $results = [];
         $result = true;
 
+        // Track our own index to loop through the records.
+        // We are only using it to know when we're on the last record (
+        // whether to send 'Close' or 'Keep-Alive' in the Connection
+        // HTTP header), and we don't want to assume that the keys of
+        // $serializedRecords are indexed and starting with 0.
         $i = 0;
+
         foreach ($serializedRecords as $k=>$data) {
             // stop attempting to emit records if we had one fail
             if (!$result) {
@@ -92,6 +98,7 @@ class FireForgetHttpFluentClient extends BaseFluentClient
                 $results[$k] = false;
                 $result = false;
             }
+            ++$i;
         }
 
         // if we don't read to the end of the responses, Fluentd may stop
