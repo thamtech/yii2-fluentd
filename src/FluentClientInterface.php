@@ -1,11 +1,8 @@
 <?php
-/*
- * Copyright (C) 2019 Thamtech, LLC
- *
- * This software is copyrighted. No part of this work may be
- * reproduced in whole or in part in any manner without the
- * permission of the Copyright owner, unless specifically authorized
- * by a license obtained from the Copyright owner.
+/**
+ * @copyright Copyright(c) 2019 Thamtech, LLC
+ * @link https://github.com/thamtech/yii2-fluentd
+ * @license https://opensource.org/licenses/BSD-3-Clause
 **/
 
 namespace thamtech\fluentd;
