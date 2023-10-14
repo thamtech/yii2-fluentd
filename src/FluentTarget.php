@@ -87,7 +87,7 @@ class FluentTarget extends Target
         if (is_array($this->client)) {
             $this->client = ArrayHelper::merge([
                 'class' => 'thamtech\fluentd\FireForgetHttpFluentClient',
-            ]);
+            ], $this->client);
         }
         $this->client = Instance::ensure($this->client, 'thamtech\fluentd\FluentClientInterface');
     }
